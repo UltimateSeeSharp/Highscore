@@ -1,14 +1,27 @@
-﻿using Highscore.Data.Model;
+﻿namespace Highscore.Code.AccessLayer;
 
-namespace Highscore.Code.AccessLayer;
-
-public class HighscoreAccessLayer
+public class HighscoreAccessLayer : IHighscoreAccessLayer
 {
-    private readonly HighscoreDbContext _dbContext = HighscoreDbContext.GetContext();
+    private HighscoreDbContext _dbContext = HighscoreDbContext.GetContext();
+
+    public void Add(Data.Model.Highscore highscore)
+    {
+        _dbContext.Highscores.Add(highscore);
+        _dbContext.SaveChanges();
+    }
+
+    public void AddRange(List<Data.Model.Highscore> highscores)
+    {
+        foreach (var highscore in highscores)
+            _dbContext.Highscores.Add(highscore);
+
+        _dbContext.SaveChanges();
+    }
 
     public List<Data.Model.Highscore> GetAll()
     {
-        return _dbContext.Highscores.ToList();
+        List<Data.Model.Highscore> highscores = _dbContext.Highscores.ToList();
+        return highscores.OrderByDescending(x => Convert.ToInt32(x.ScoreValue)).ToList();
     }
 
     public List<string> GetGames()
@@ -17,25 +30,15 @@ public class HighscoreAccessLayer
         return games;
     }
 
-    public bool Remove(int id)
+    public void Remove(int id)
     {
         Data.Model.Highscore? highscore = _dbContext.Highscores.FirstOrDefault(x => x.Id == id);
-        
-        if(highscore is null)
-            return false;
+
+        if (highscore is null)
+            return;
 
         _dbContext.Highscores.Remove(highscore);
         _dbContext.SaveChanges();
-
-        return !_dbContext.Highscores.Contains(highscore);
-    }
-
-    public bool Add(Data.Model.Highscore highscore)
-    {
-        _dbContext.Highscores.Add(highscore);
-        _dbContext.SaveChanges();
-
-        return _dbContext.Highscores.Contains(highscore);
     }
 
     public void Seed() => _dbContext.Seed();

@@ -1,19 +1,20 @@
-﻿using Highscore.Code;
-using Highscore.Code.AccessLayer;
+﻿using Highscore.Code.AccessLayer;
 using Highscore.Wpf.Infrastructure;
 using Highscore.Wpf.Service;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Windows;
-using System.Windows.Documents;
+using System.Windows.Forms;
 using System.Windows.Input;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.Window;
 
 namespace Highscore.Wpf;
 
 public class MainWindowViewModel : BaseViewModel
 {
-    private readonly HighscoreAccessLayer _highscoreAccessLayer = new();
+    private readonly IHighscoreAccessLayer _highscoreAccessLayer = new HighscoreCsvAccessLayer();
     private readonly ValidationService _validationService = new();
+    private readonly CsvService _csvService = new();
 
     public ObservableCollection<Data.Model.Highscore> Highscores { get; set; } = new();
 
@@ -50,7 +51,7 @@ public class MainWindowViewModel : BaseViewModel
             string error = _validationService.IsHighscoreValid(Highscore);
             if (!string.IsNullOrEmpty(error))
             {
-                MessageBox.Show(error);
+                System.Windows.MessageBox.Show(error);
                 return;
             }
 
@@ -73,14 +74,41 @@ public class MainWindowViewModel : BaseViewModel
         }
     };
 
-    public void Loaded()
+    public ICommand ImportCSV => new RelayCommand()
     {
-        _highscoreAccessLayer.Seed();
-        RefreshHighscoreData();
-    }
+        CommandAction = () =>
+        {
+            OpenFileDialog dialog = new();
+            if (dialog.ShowDialog() != DialogResult.OK)
+                return;
+
+            List<Data.Model.Highscore> highscores = _csvService.ImportCsv<Data.Model.Highscore>(dialog.FileName);
+            _highscoreAccessLayer.AddRange(highscores);
+        }
+    };
+
+    public ICommand ExportCSV => new RelayCommand()
+    {
+        CommandAction = () =>
+        {
+            FolderBrowserDialog dialog = new();
+            if (dialog.ShowDialog() != DialogResult.OK)
+                return;
+
+            List<Data.Model.Highscore> highscores = _highscoreAccessLayer.GetAll();
+            string filename = $"csv_export_{DateTime.Now.ToString("yyyy mm dd hh mm ss")}_{highscores.Count}";
+            string path = dialog.SelectedPath + "\\" + filename;
+
+            _csvService.ExportCSV<Data.Model.Highscore>(highscores, path);        
+        }
+    };
+
+    public void Loaded() => RefreshHighscoreData();
 
     private void RefreshHighscoreData()
     {
+        _highscoreAccessLayer.Seed();
+
         Highscores = new(_highscoreAccessLayer.GetAll());
         OnPropertyChanged(nameof(Highscores));
 
