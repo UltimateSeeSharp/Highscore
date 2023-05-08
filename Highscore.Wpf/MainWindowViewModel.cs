@@ -4,6 +4,7 @@ using Highscore.Wpf.Service;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.IO.Packaging;
 using System.Windows.Forms;
 using System.Windows.Input;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement.Window;
@@ -103,12 +104,15 @@ public class MainWindowViewModel : BaseViewModel
         }
     };
 
-    public void Loaded() => RefreshHighscoreData();
+    public void Loaded()
+    {
+        _highscoreAccessLayer.EnsureStorageCreated();
+        _highscoreAccessLayer.Seed();
+        RefreshHighscoreData();
+    }
 
     private void RefreshHighscoreData()
     {
-        _highscoreAccessLayer.Seed();
-
         Highscores = new(_highscoreAccessLayer.GetAll());
         OnPropertyChanged(nameof(Highscores));
 

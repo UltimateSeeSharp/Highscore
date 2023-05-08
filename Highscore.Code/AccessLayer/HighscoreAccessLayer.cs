@@ -2,7 +2,7 @@
 
 public class HighscoreAccessLayer : IHighscoreAccessLayer
 {
-    private HighscoreDbContext _dbContext = HighscoreDbContext.GetContext();
+    private HighscoreDbContext _dbContext;
 
     public void Add(Data.Model.Highscore highscore)
     {
@@ -16,6 +16,11 @@ public class HighscoreAccessLayer : IHighscoreAccessLayer
             _dbContext.Highscores.Add(highscore);
 
         _dbContext.SaveChanges();
+    }
+
+    public void EnsureStorageCreated()
+    {
+        throw new NotImplementedException();
     }
 
     public List<Data.Model.Highscore> GetAll()
@@ -42,4 +47,6 @@ public class HighscoreAccessLayer : IHighscoreAccessLayer
     }
 
     public void Seed() => _dbContext.Seed();
+
+    public void VerifyFile() => _dbContext = HighscoreDbContext.GetContext();
 }

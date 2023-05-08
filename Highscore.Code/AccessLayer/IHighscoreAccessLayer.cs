@@ -7,6 +7,7 @@
         List<Data.Model.Highscore> GetAll();
         List<string> GetGames();
         void Remove(int id);
+        void EnsureStorageCreated();
         void Seed();
     }
 }
