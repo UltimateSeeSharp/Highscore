@@ -7,7 +7,11 @@ public class HighscoreCsvAccessLayer : IHighscoreAccessLayer
 {
     private readonly string _csvPath = "C:\\Users\\Schneider David\\Desktop\\HighscoreProject\\highscores.csv";
 
-    public HighscoreCsvAccessLayer() => EnsureStorageCreated();
+    public HighscoreCsvAccessLayer(string path)
+    {
+        _csvPath = path;
+        EnsureStorageCreated();
+    }
 
     public void EnsureStorageCreated()
     {

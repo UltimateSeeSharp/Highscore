@@ -11,9 +11,14 @@ namespace Highscore.Wpf;
 
 public class MainWindowViewModel : BaseViewModel
 {
-    private readonly IHighscoreAccessLayer _highscoreAccessLayer = new HighscoreCsvAccessLayer();
     private readonly ValidationService _validationService = new();
     private readonly CsvService _csvService = new();
+
+    private IHighscoreAccessLayer _highscoreAccessLayer;
+    private string _csvPath = string.Empty;
+
+    public MainWindowViewModel() => GetPathFromUser();
+
 
     public ObservableCollection<Data.Model.Highscore> Highscores { get; set; } = new();
 
@@ -35,7 +40,7 @@ public class MainWindowViewModel : BaseViewModel
         get => _selectedHighscore;
         set
         {
-            if(_selectedHighscore == value) return;
+            if (_selectedHighscore == value) return;
             _selectedHighscore = value;
             OnPropertyChanged();
         }
@@ -98,15 +103,11 @@ public class MainWindowViewModel : BaseViewModel
             string filename = $"csv_export_{DateTime.Now.ToString("yyyy mm dd hh mm ss")}_{highscores.Count}";
             string path = dialog.SelectedPath + "\\" + filename;
 
-            _csvService.ExportCSV<Data.Model.Highscore>(highscores, path);        
+            _csvService.ExportCSV<Data.Model.Highscore>(highscores, path);
         }
     };
 
-    public void Loaded()
-    {
-        _highscoreAccessLayer.Seed();
-        RefreshHighscoreData();
-    }
+    public void Loaded() => RefreshHighscoreData();
 
     private void RefreshHighscoreData()
     {
@@ -115,5 +116,22 @@ public class MainWindowViewModel : BaseViewModel
 
         Games = _highscoreAccessLayer.GetGames();
         OnPropertyChanged(nameof(Games));
+    }
+
+    private void GetPathFromUser()
+    {
+        MessageBox.Show("Select a folder for your highscores file");
+        FolderBrowserDialog dialog = new();
+
+        if (dialog.ShowDialog() == DialogResult.OK)
+        {
+            _csvPath = dialog.SelectedPath + "/highscores.csv";
+            _highscoreAccessLayer = new HighscoreCsvAccessLayer(_csvPath);
+        }
+        else
+        {
+            MessageBox.Show("Folder path not valid");
+            Environment.Exit(1);
+        }
     }
 }
