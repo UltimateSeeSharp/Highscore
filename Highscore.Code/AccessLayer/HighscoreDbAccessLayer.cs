@@ -2,6 +2,9 @@
 
 public class HighscoreDbAccessLayer : IHighscoreAccessLayer
 {
+
+    // Zusatz aufgabe implementierung mit EF
+
     private HighscoreDbContext _dbContext;
 
     public void Add(Data.Model.Highscore highscore)
