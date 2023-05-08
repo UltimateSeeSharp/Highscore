@@ -1,75 +1,72 @@
 ﻿using CsvHelper;
 using System.Globalization;
-using System.Runtime.CompilerServices;
 
 namespace Highscore.Code.AccessLayer;
 
 public class HighscoreCsvAccessLayer : IHighscoreAccessLayer
 {
     private readonly string _csvPath = "C:\\Users\\Schneider David\\Desktop\\HighscoreProject\\highscores.csv";
-    private CsvWriter _csvWriter;
 
-    public HighscoreCsvAccessLayer()
+    public HighscoreCsvAccessLayer() => EnsureStorageCreated();
+
+    public void EnsureStorageCreated()
     {
-        StreamWriter writer = new(this._csvPath);
-        _csvWriter = new(writer, CultureInfo.InvariantCulture);
+        if (File.Exists(_csvPath))
+            return;
 
-        WriteStorageFile();
-    }
+        using StreamWriter writer = new(this._csvPath);
+        using CsvWriter csvWriter = new(writer, CultureInfo.InvariantCulture);
 
-    private void WriteStorageFile()
-    {
-        if (!File.Exists(this._csvPath))
-            File.Create(this._csvPath).Close();
-
-        _csvWriter.WriteHeader<Data.Model.Highscore>();
-        _csvWriter.NextRecord();
-        _csvWriter.Flush();
+        csvWriter.WriteHeader<Data.Model.Highscore>();
+        csvWriter.NextRecord();
+        csvWriter.Flush();
     }
 
     public void Add(Data.Model.Highscore highscore)
     {
-        _csvWriter
+        highscore.Id = GetAll().Count + 1;
+
+        using StreamWriter writer = new(this._csvPath, append: true);
+        using CsvWriter csvWriter = new(writer, CultureInfo.InvariantCulture);
+
+        csvWriter.WriteRecord<Data.Model.Highscore>(highscore);
+        csvWriter.NextRecord();
+        csvWriter.Flush();
     }
 
     public void AddRange(List<Data.Model.Highscore> highscores)
     {
-        throw new NotImplementedException();
-    }
-
-    public void EnsureStorageCreated()
-    {
-
+        highscores.ForEach(x => Add(x));
     }
 
     public List<Data.Model.Highscore> GetAll()
     {
-        throw new NotImplementedException();
+        using StreamReader reader = new(this._csvPath);
+        using CsvReader csvReader = new(reader, CultureInfo.InvariantCulture);
+
+        List<Data.Model.Highscore> highscores = csvReader.GetRecords<Data.Model.Highscore>().ToList();
+
+        return highscores.OrderByDescending(x => Convert.ToInt32(x.ScoreValue)).ToList();
     }
 
     public List<string> GetGames()
     {
-        throw new NotImplementedException();
+        return GetAll().Select(x => x.GameName).Distinct().ToList();
     }
 
     public void Remove(int id)
     {
-        throw new NotImplementedException();
-    }
+        List<Data.Model.Highscore> highscores = GetAll();
+        
+        Data.Model.Highscore? highscore = highscores.FirstOrDefault(x => x.Id == id);
+        if (highscore is null)
+            return;
 
-    public void Seed()
-    {
-        var highscore = new Data.Model.Highscore
-        {
-            Comment = "test",
-            Date = DateTime.Now,
-            GameName = "re",
-            PlayerName = "re",
-            Id = 1,
-            ScoreValue = "533"
-        };
+        highscores.Remove(highscore);
+        
+        File.Delete(this._csvPath);
 
-        _csvWriter.WriteRecord<Data.Model.Highscore>(highscore);
-        _csvWriter.Flush();
+        EnsureStorageCreated();
+        AddRange(highscores);
     }
 }

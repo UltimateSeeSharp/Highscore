@@ -4,10 +4,8 @@ using Highscore.Wpf.Service;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.IO.Packaging;
 using System.Windows.Forms;
 using System.Windows.Input;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement.Window;
 
 namespace Highscore.Wpf;
 
@@ -106,7 +104,6 @@ public class MainWindowViewModel : BaseViewModel
 
     public void Loaded()
     {
-        _highscoreAccessLayer.EnsureStorageCreated();
         _highscoreAccessLayer.Seed();
         RefreshHighscoreData();
     }

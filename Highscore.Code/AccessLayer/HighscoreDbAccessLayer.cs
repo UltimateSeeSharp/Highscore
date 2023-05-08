@@ -1,6 +1,6 @@
 ﻿namespace Highscore.Code.AccessLayer;
 
-public class HighscoreAccessLayer : IHighscoreAccessLayer
+public class HighscoreDbAccessLayer : IHighscoreAccessLayer
 {
     private HighscoreDbContext _dbContext;
 

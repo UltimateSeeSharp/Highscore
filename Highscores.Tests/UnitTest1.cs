@@ -4,7 +4,7 @@ namespace Highscores.Tests
 {
     public class Tests
     {
-        private readonly HighscoreAccessLayer _highscoreAccessLayer = new();
+        private readonly HighscoreDbAccessLayer _highscoreAccessLayer = new();
 
         [SetUp]
         public void Setup()
