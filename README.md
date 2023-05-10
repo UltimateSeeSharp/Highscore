@@ -7,6 +7,5 @@ At the end a table is displayed where you can see which player has the highest h
 
 Marko Zivkovic and David Schneider implemented the program together.
 
-
-
+![alt text](https://cdn.xboxdev.com/wp-content/uploads/2020/08/10115706/Highscore-Trailer-Netflix-800x445.jpg)
 
